@@ -44,12 +44,18 @@ export default function index(){
             <View className="w-full bg-zinc-900 p-4 rounded-xl my-8 border border-zinc-800">
                 <Input variant='tertiary'>
                     <MapPin color={colors.zinc[400]} size={20} />
-                    <Input.Field placeholder='Para onde?'/>
+                    <Input.Field 
+                        placeholder='Para onde?'
+                        editable={stepForm === StepForm.TRIP_DETAILS}                    
+                    />
                 </Input>
 
                 <Input variant='tertiary'>
                     <IconCalendar color={colors.zinc[400]} size={20} />
-                    <Input.Field placeholder='Quando?'/>
+                    <Input.Field
+                        placeholder='Quando?'
+                        editable={stepForm === StepForm.TRIP_DETAILS}
+                     />
                 </Input>
 
                 {stepForm === StepForm.ADD_EMAIL && (
@@ -76,7 +82,10 @@ export default function index(){
 
                 <Button onPress={handleNextStepForm}>
                     <Button.Title>
-                        Continuar
+                        {stepForm === StepForm.TRIP_DETAILS
+                            ? "Continuar"
+                            : "Confirmar Viagem"
+                        }
                     </Button.Title>
                     <ArrowRight color={colors.lime[950]} size={20} />
                 </Button>
