@@ -1,3 +1,4 @@
+import { useState } from "react"
 import {View, Text, Image} from 'react-native'
 import { Input } from "@/components/input"
 import {
@@ -13,7 +14,21 @@ import {
 
   import { colors } from "@/styles/colors"
 
+  enum StepForm {
+    TRIP_DETAILS = 1,
+    ADD_EMAIL = 2,
+  }
+
 export default function index(){
+
+    const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS)
+
+    function handleNextStepForm() {       
+        if (stepForm === StepForm.TRIP_DETAILS) {
+          return setStepForm(StepForm.ADD_EMAIL)
+        }    
+    }
+
     return(
         <View className="flex-1 items-center justify-center px-5">
             <Image
@@ -37,23 +52,29 @@ export default function index(){
                     <Input.Field placeholder='Quando?'/>
                 </Input>
 
-                <View className="border-b py-3 border-zinc-800">
-                    <Button
-                        variant='secondary'
-                    >
-                        <Button.Title>
-                            Alterar local/data
-                        </Button.Title>
-                        <Settings2 color={colors.zinc[200]} size={20} />
-                    </Button>
-                </View>
+                {stepForm === StepForm.ADD_EMAIL && (
+                    <>
+                        <View className="border-b py-3 border-zinc-800">
+                            <Button
+                                variant='secondary'
+                                onPress={() => setStepForm(StepForm.TRIP_DETAILS)}
+                            >
+                                <Button.Title>
+                                    Alterar local/data
+                                </Button.Title>
+                                <Settings2 color={colors.zinc[200]} size={20} />
+                            </Button>
+                        </View>     
 
-                <Input variant='tertiary'>
-                    <UserRoundPlus color={colors.zinc[400]} size={20} />
-                    <Input.Field placeholder="Quem estará na viagem?"/>
-                </Input>
+                        <Input variant='tertiary'>
+                            <UserRoundPlus color={colors.zinc[400]} size={20} />
+                            <Input.Field placeholder="Quem estará na viagem?"/>
+                        </Input>
 
-                <Button>
+                    </>
+                )}
+
+                <Button onPress={handleNextStepForm}>
                     <Button.Title>
                         Continuar
                     </Button.Title>
