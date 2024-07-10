@@ -1,5 +1,5 @@
 import { useState } from "react"
-import {View, Text, Image} from 'react-native'
+import {View, Text, Image, Alert} from 'react-native'
 import { Input } from "@/components/input"
 import {
     MapPin,
@@ -20,10 +20,25 @@ import {
   }
 
 export default function index(){
-
+    const [destination, setDestination] = useState("")
     const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS)
 
-    function handleNextStepForm() {       
+    function handleNextStepForm() {    
+        
+        if (destination.trim().length === 0) {
+            return Alert.alert(
+              "Detalhes da viagem",
+              "Preencha todos as informações da viagem para seguir."
+            )
+          }
+      
+          if (destination.length < 4) {
+            return Alert.alert(
+              "Detalhes da viagem",
+              "O destino deve ter pelo menos 4 caracteres."
+            )
+          }
+        
         if (stepForm === StepForm.TRIP_DETAILS) {
           return setStepForm(StepForm.ADD_EMAIL)
         }    
@@ -45,6 +60,8 @@ export default function index(){
                 <Input variant='tertiary'>
                     <MapPin color={colors.zinc[400]} size={20} />
                     <Input.Field 
+                        onChangeText={setDestination}
+                        value={destination}
                         placeholder='Para onde?'
                         editable={stepForm === StepForm.TRIP_DETAILS}                    
                     />
