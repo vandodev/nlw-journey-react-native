@@ -6,6 +6,8 @@ import {
   Inter_600SemiBold,
 } from "@expo-google-fonts/inter"
 
+import "@/utils/dayjsLocaleConfig"
+
 import { View, StatusBar } from "react-native"
 import { Slot } from "expo-router"
 import { Loading } from "@/components/loading"

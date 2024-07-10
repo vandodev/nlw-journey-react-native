@@ -7,10 +7,15 @@ import {
     Settings2,
     UserRoundPlus,
     ArrowRight,
-    AtSign,
   } from "lucide-react-native"
 
+  import dayjs from "dayjs"
+  import { DateData } from "react-native-calendars"
+  
+import { DatesSelected, calendarUtils } from "@/utils/calendarUtils"
+
 import { Button } from "@/components/button"
+import { Calendar } from "@/components/calendar"
 
 import { colors } from "@/styles/colors"
 import { Modal } from "@/components/modal"
@@ -29,12 +34,18 @@ export default function index(){
     const [destination, setDestination] = useState("")
     const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS)
 
+    const [selectedDates, setSelectedDates] = useState({} as DatesSelected)
+
     // MODAL
     const [showModal, setShowModal] = useState(MODAL.NONE)
 
     function handleNextStepForm() {    
         
-        if (destination.trim().length === 0) {
+        if (
+            destination.trim().length === 0 ||
+            !selectedDates.startsAt ||
+            !selectedDates.endsAt
+          ) {
             return Alert.alert(
               "Detalhes da viagem",
               "Preencha todos as informações da viagem para seguir."
@@ -52,6 +63,17 @@ export default function index(){
           return setStepForm(StepForm.ADD_EMAIL)
         }    
     }
+
+    function handleSelectDate(selectedDay: DateData) {
+        const dates = calendarUtils.orderStartsAtAndEndsAt({
+          startsAt: selectedDates.startsAt,
+          endsAt: selectedDates.endsAt,
+          selectedDay,
+        })
+    
+        setSelectedDates(dates)
+    }
+    
 
     return(
         <View className="flex-1 items-center justify-center px-5">
@@ -86,6 +108,7 @@ export default function index(){
                         onPressIn={() =>
                           stepForm === StepForm.TRIP_DETAILS && setShowModal(MODAL.CALENDAR)
                         }
+                        value={selectedDates.formatDatesInText}
                      />
                 </Input>
 
@@ -132,11 +155,23 @@ export default function index(){
             </Text>
 
             <Modal
-                  title="Selecionar datas"
-                  subtitle="Selecione a data de ida e volta da viagem"
-                  visible={showModal === MODAL.CALENDAR}
-                  onClose={() => setShowModal(MODAL.NONE)}
+                title="Selecionar datas"
+                subtitle="Selecione a data de ida e volta da viagem"
+                visible={showModal === MODAL.CALENDAR}
+                 onClose={() => setShowModal(MODAL.NONE)}
             >
+
+            < View className="gap-4 mt-4">
+                <Calendar
+                    minDate={dayjs().toISOString()}
+                    onDayPress={handleSelectDate}
+                    markedDates={selectedDates.dates}
+                />
+
+                <Button onPress={() => setShowModal(MODAL.NONE)}>
+                    <Button.Title>Confirmar</Button.Title>
+                </Button>
+                </View>
 
             </Modal>
 
