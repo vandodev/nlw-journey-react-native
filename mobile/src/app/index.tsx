@@ -1,5 +1,5 @@
 import { useState } from "react"
-import {View, Text, Image, Alert} from 'react-native'
+import {View, Text, Image, Alert, Keyboard} from 'react-native'
 import { Input } from "@/components/input"
 import {
     MapPin,
@@ -10,18 +10,27 @@ import {
     AtSign,
   } from "lucide-react-native"
 
-  import { Button } from "@/components/button"
+import { Button } from "@/components/button"
 
-  import { colors } from "@/styles/colors"
+import { colors } from "@/styles/colors"
+import { Modal } from "@/components/modal"
 
   enum StepForm {
     TRIP_DETAILS = 1,
     ADD_EMAIL = 2,
   }
 
+  enum MODAL {
+    NONE = 0,
+    CALENDAR = 1,
+  }
+
 export default function index(){
     const [destination, setDestination] = useState("")
     const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS)
+
+    // MODAL
+    const [showModal, setShowModal] = useState(MODAL.NONE)
 
     function handleNextStepForm() {    
         
@@ -72,6 +81,11 @@ export default function index(){
                     <Input.Field
                         placeholder='Quando?'
                         editable={stepForm === StepForm.TRIP_DETAILS}
+                        onFocus={() => Keyboard.dismiss()}
+                        showSoftInputOnFocus={false}
+                        onPressIn={() =>
+                          stepForm === StepForm.TRIP_DETAILS && setShowModal(MODAL.CALENDAR)
+                        }
                      />
                 </Input>
 
@@ -116,6 +130,16 @@ export default function index(){
                 termos de uso e políticas de privacidade.
                 </Text>
             </Text>
+
+            <Modal
+                  title="Selecionar datas"
+                  subtitle="Selecione a data de ida e volta da viagem"
+                  visible={showModal === MODAL.CALENDAR}
+                  onClose={() => setShowModal(MODAL.NONE)}
+            >
+
+            </Modal>
+
         </View>
     )
 }
