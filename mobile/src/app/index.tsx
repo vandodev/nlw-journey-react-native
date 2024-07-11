@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {View, Text, Image, Alert, Keyboard} from 'react-native'
 import {
     MapPin,
@@ -24,6 +24,8 @@ import { Button } from "@/components/button"
 import { Calendar } from "@/components/calendar"
 import { Modal } from "@/components/modal"
 
+import { Loading } from "@/components/loading"
+
 import { colors } from "@/styles/colors"
 import { validateInput } from "@/utils/validateInput"
 
@@ -40,8 +42,9 @@ import { validateInput } from "@/utils/validateInput"
 
 export default function index(){
 
-    // LOADING
-    const [isCreatingTrip, setIsCreatingTrip] = useState(false)
+     // LOADING
+  const [isCreatingTrip, setIsCreatingTrip] = useState(false)
+  const [isGettingTrip, setIsGettingTrip] = useState(true)
 
     // DATA
     const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS)
@@ -156,7 +159,35 @@ export default function index(){
           console.log(error)
           setIsCreatingTrip(false)
         }
+    }
+
+    async function getTrip() {
+      try {
+        const tripID = await tripStorage.get()
+  
+        if (!tripID) {
+          return setIsGettingTrip(false)
+        }
+  
+        const trip = await tripServer.getById(tripID)
+  
+        if (trip) {
+          return router.navigate("/trip/" + trip.id)
+        }
+      } catch (error) {
+        setIsGettingTrip(false)
+        console.log(error)
       }
+    }
+
+    useEffect(() => {
+      getTrip()
+    }, [])
+  
+    if (isGettingTrip) {
+      return <Loading />
+    }
+  
     
     
 
