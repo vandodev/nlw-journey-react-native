@@ -1,24 +1,27 @@
 import { useState } from "react"
 import {View, Text, Image, Alert, Keyboard} from 'react-native'
-import { Input } from "@/components/input"
 import {
     MapPin,
     Calendar as IconCalendar,
     Settings2,
     UserRoundPlus,
     ArrowRight,
-  } from "lucide-react-native"
+    AtSign,
+} from "lucide-react-native"
 
-  import dayjs from "dayjs"
-  import { DateData } from "react-native-calendars"
-  
+import dayjs from "dayjs"
+import { DateData } from "react-native-calendars"
+
 import { DatesSelected, calendarUtils } from "@/utils/calendarUtils"
 
+import { Input } from "@/components/input"
+import { GuestEmail } from "@/components/email"
 import { Button } from "@/components/button"
 import { Calendar } from "@/components/calendar"
+import { Modal } from "@/components/modal"
 
 import { colors } from "@/styles/colors"
-import { Modal } from "@/components/modal"
+import { validateInput } from "@/utils/validateInput"
 
   enum StepForm {
     TRIP_DETAILS = 1,
@@ -27,14 +30,18 @@ import { Modal } from "@/components/modal"
 
   enum MODAL {
     NONE = 0,
-    CALENDAR = 1,
+    CALENDAR = 1,    
+    GUESTS = 2,
   }
 
 export default function index(){
-    const [destination, setDestination] = useState("")
-    const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS)
 
+    // DATA
+    const [stepForm, setStepForm] = useState(StepForm.TRIP_DETAILS)
     const [selectedDates, setSelectedDates] = useState({} as DatesSelected)
+    const [destination, setDestination] = useState("")
+    const [emailToInvite, setEmailToInvite] = useState("")
+    const [emailsToInvite, setEmailsToInvite] = useState<string[]>([])
 
     // MODAL
     const [showModal, setShowModal] = useState(MODAL.NONE)
@@ -72,6 +79,29 @@ export default function index(){
         })
     
         setSelectedDates(dates)
+    }
+
+    function handleRemoveEmail(emailToRemove: string) {
+        setEmailsToInvite((prevState) =>
+          prevState.filter((email) => email !== emailToRemove)
+        )
+    }
+
+    function handleAddEmail() {
+        if (!validateInput.email(emailToInvite)) {
+          return Alert.alert("Convidado", "E-mail inválido!")
+        }
+    
+        const emailAlreadyExists = emailsToInvite.find(
+          (email) => email === emailToInvite
+        )
+    
+        if (emailAlreadyExists) {
+          return Alert.alert("Convidado", "E-mail já foi adicionado!")
+        }
+    
+        setEmailsToInvite((prevState) => [...prevState, emailToInvite])
+        setEmailToInvite("")
     }
     
 
@@ -128,7 +158,19 @@ export default function index(){
 
                         <Input variant='tertiary'>
                             <UserRoundPlus color={colors.zinc[400]} size={20} />
-                            <Input.Field placeholder="Quem estará na viagem?"/>
+                            <Input.Field 
+                                placeholder="Quem estará na viagem?"
+                                showSoftInputOnFocus={false}
+                                value={
+                                    emailsToInvite.length > 0
+                                      ? `${emailsToInvite.length} pessoas(a) convidada(s)`
+                                      : ""
+                                }
+                                onPress={() => {
+                                    Keyboard.dismiss()
+                                    setShowModal(MODAL.GUESTS)
+                                  }}
+                            />
                         </Input>
 
                     </>
@@ -173,6 +215,49 @@ export default function index(){
                 </Button>
                 </View>
 
+            </Modal>
+
+            <Modal
+                title="Selecionar convidados"
+                subtitle="Os convidados irão receber e-mails para confirmar a participação na viagem."
+                visible={showModal === MODAL.GUESTS}
+                onClose={() => setShowModal(MODAL.NONE)}
+            >
+                <View className="my-2 flex-wrap gap-2 border-b border-zinc-800 py-5 items-start">
+                    {emailsToInvite.length > 0 ? (
+                        emailsToInvite.map((email) => (
+                        <GuestEmail
+                            key={email}
+                            email={email}
+                            onRemove={() => handleRemoveEmail(email)}                           
+                        />
+                        ))
+                    ) : (
+                        <Text className="text-zinc-600 text-base font-regular">
+                            Nenhum e-mail adicionado.
+                        </Text>
+                    )}
+                </View>
+
+                <View className="gap-4 mt-4">
+                <Input variant="secondary">
+                    <AtSign color={colors.zinc[400]} size={20} />
+                    <Input.Field
+                    placeholder="Digite o e-mail do convidado"
+                    keyboardType="email-address"
+                    onChangeText={(text) => setEmailToInvite(text.toLowerCase())}
+                    value={emailToInvite}
+                    returnKeyType="send"
+                    onSubmitEditing={handleAddEmail}
+                    />
+                </Input>
+
+                <Button 
+                    onPress={handleAddEmail}
+                >
+                    <Button.Title>Convidar</Button.Title>
+                </Button>
+                </View>
             </Modal>
 
         </View>
