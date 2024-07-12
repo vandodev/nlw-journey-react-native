@@ -8,6 +8,8 @@ import { Button } from "@/components/button"
 import { Activities } from "./activities"
 import { Details } from "./details"
 import { Modal } from "@/components/modal"
+import { Calendar } from "@/components/calendar"
+import { DateData } from "react-native-calendars"
 
 import {
   CalendarRange,
@@ -44,6 +46,7 @@ export default function Trip() {
 
   // DATA
   const [tripDetails, setTripDetails] = useState({} as TripData)
+  const [selectedDates, setSelectedDates] = useState({} as DatesSelected)
   
   const [option, setOption] = useState<"activity" | "details">("activity")
   const [destination, setDestination] = useState("")
@@ -69,6 +72,8 @@ export default function Trip() {
       const ends_at = dayjs(trip.ends_at).format("DD")
       const month = dayjs(trip.starts_at).format("MMM")
 
+      setDestination(trip.destination)
+
       setTripDetails({
         ...trip,
         when: `${destination} de ${starts_at} a ${ends_at} de ${month}.`,
@@ -79,6 +84,16 @@ export default function Trip() {
     } finally {
       setIsLoadingTrip(false)
     }
+  }
+
+  function handleSelectDate(selectedDay: DateData) {
+    const dates = calendarUtils.orderStartsAtAndEndsAt({
+      startsAt: selectedDates.startsAt,
+      endsAt: selectedDates.endsAt,
+      selectedDay,
+    })
+
+    setSelectedDates(dates)
   }
 
   useEffect(() => {
@@ -161,7 +176,7 @@ export default function Trip() {
           
             <Input.Field
               placeholder="Quando?"
-              value={destination}
+              value={selectedDates.formatDatesInText}
               onPressIn={() => setShowModal(MODAL.CALENDAR)}
               onFocus={() => Keyboard.dismiss()}
             />
@@ -172,6 +187,25 @@ export default function Trip() {
           <Button.Title>Atualizar</Button.Title>
         </Button>
      
+      </Modal>
+
+      <Modal
+        title="Selecionar datas"
+        subtitle="Selecione a data de ida e volta da viagem"
+        visible={showModal === MODAL.CALENDAR}
+        onClose={() => setShowModal(MODAL.NONE)}
+      >
+        <View className="gap-4 mt-4">
+          <Calendar
+            minDate={dayjs().toISOString()}
+            onDayPress={handleSelectDate}
+            markedDates={selectedDates.dates}
+          />
+
+          <Button onPress={() => setShowModal(MODAL.UPDATE_TRIP)}>
+            <Button.Title>Confirmar</Button.Title>
+          </Button>
+        </View>
       </Modal>
 
     </View>
