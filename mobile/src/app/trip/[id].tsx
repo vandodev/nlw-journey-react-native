@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { Keyboard, TouchableOpacity, View, Text } from "react-native"
+import { Keyboard, TouchableOpacity, View, Alert, Text } from "react-native"
 import { router, useLocalSearchParams } from "expo-router"
 import { TripDetails, tripServer } from "@/server/trip-server"
 import { Loading } from "@/components/loading"
@@ -43,6 +43,7 @@ export default function Trip() {
   
   // LOADING
   const [isLoadingTrip, setIsLoadingTrip] = useState(true)
+  const [isUpdatingTrip, setIsUpdatingTrip] = useState(false)
 
   // DATA
   const [tripDetails, setTripDetails] = useState({} as TripData)
@@ -50,6 +51,12 @@ export default function Trip() {
   
   const [option, setOption] = useState<"activity" | "details">("activity")
   const [destination, setDestination] = useState("")
+
+
+  const tripParams = useLocalSearchParams<{
+    id: string
+    participant?: string
+  }>()
 
   async function getTripDetails() {
     try {
@@ -94,6 +101,44 @@ export default function Trip() {
     })
 
     setSelectedDates(dates)
+  }
+
+  async function handleUpdateTrip() {
+    try {
+      if (!tripParams.id) {
+        return
+      }
+
+      if (!destination || !selectedDates.startsAt || !selectedDates.endsAt) {
+        return Alert.alert(
+          "Atualizar viagem",
+          "Lembre-se de, além de preencher o destino, selecione data de início e fim da viagem."
+        )
+      }
+
+      setIsUpdatingTrip(true)
+
+      await tripServer.update({
+        id: tripParams.id,
+        destination,
+        starts_at: dayjs(selectedDates.startsAt.dateString).toString(),
+        ends_at: dayjs(selectedDates.endsAt.dateString).toString(),
+      })
+
+      Alert.alert("Atualizar viagem", "Viagem atualizada com sucesso!", [
+        {
+          text: "OK",
+          onPress: () => {
+            setShowModal(MODAL.NONE)
+            getTripDetails()
+          },
+        },
+      ])
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setIsUpdatingTrip(false)
+    }
   }
 
   useEffect(() => {
@@ -183,7 +228,7 @@ export default function Trip() {
           </Input>
         </View>
 
-        <Button>
+        <Button onPress={handleUpdateTrip} isLoading={isUpdatingTrip}>
           <Button.Title>Atualizar</Button.Title>
         </Button>
      
