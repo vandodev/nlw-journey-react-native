@@ -5,6 +5,8 @@ import { TripDetails, tripServer } from "@/server/trip-server"
 import { Loading } from "@/components/loading"
 import { Input } from "@/components/input"
 import { Button } from "@/components/button"
+import { Activities } from "./activities"
+import { Details } from "./details"
 
 import {
   MapPin,
@@ -81,12 +83,17 @@ export default function Trip() {
 
         <TouchableOpacity
           activeOpacity={0.6}
-          className="w-9 h-9 bg-zinc-800 items-center justify-center rounded"
-          // onPress={() => setShowModal(MODAL.UPDATE_TRIP)}
+          className="w-9 h-9 bg-zinc-800 items-center justify-center rounded"          
         >
           <Settings2 color={colors.zinc[400]} size={20} />
         </TouchableOpacity>
       </Input>
+
+      {option === "activity" ? (
+        <Activities />
+      ) : (
+        <Details />
+      )}
 
       <View className="w-full absolute -bottom-1 self-center justify-end pb-5 z-10 bg-zinc-950">
         <View className="w-full flex-row bg-zinc-900 p-4 rounded-lg border border-zinc-800 gap-2">
