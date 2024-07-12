@@ -88,11 +88,11 @@ export default function Trip() {
           <Settings2 color={colors.zinc[400]} size={20} />
         </TouchableOpacity>
       </Input>
-
+      
       {option === "activity" ? (
-        <Activities />
+        <Activities tripDetails={tripDetails} />
       ) : (
-        <Details />
+        <Details tripId={tripDetails.id} />
       )}
 
       <View className="w-full absolute -bottom-1 self-center justify-end pb-5 z-10 bg-zinc-950">
