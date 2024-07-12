@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react"
-import { TouchableOpacity, View } from "react-native"
+import { Keyboard, TouchableOpacity, View, Text } from "react-native"
 import { router, useLocalSearchParams } from "expo-router"
 import { TripDetails, tripServer } from "@/server/trip-server"
 import { Loading } from "@/components/loading"
@@ -7,21 +7,35 @@ import { Input } from "@/components/input"
 import { Button } from "@/components/button"
 import { Activities } from "./activities"
 import { Details } from "./details"
+import { Modal } from "@/components/modal"
 
 import {
+  CalendarRange,
+  Info,
   MapPin,
   Settings2,
-  Info,
-  CalendarRange,
+  Calendar as IconCalendar,
+
 } from "lucide-react-native"
 
 import dayjs from "dayjs"
+import { DatesSelected, calendarUtils } from "@/utils/calendarUtils"
 import { colors } from "@/styles/colors"
 
 
 export type TripData = TripDetails & { when: string }
 
+enum MODAL {
+  NONE = 0,
+  UPDATE_TRIP = 1,
+  CALENDAR = 2,
+  CONFIRM_ATTENDANCE = 3,
+}
+
 export default function Trip() {
+
+  // MODAL
+  const [showModal, setShowModal] = useState(MODAL.NONE)
 
   const tripId = useLocalSearchParams<{id: string}>().id
   
@@ -83,7 +97,8 @@ export default function Trip() {
 
         <TouchableOpacity
           activeOpacity={0.6}
-          className="w-9 h-9 bg-zinc-800 items-center justify-center rounded"          
+          className="w-9 h-9 bg-zinc-800 items-center justify-center rounded"  
+          onPress={() => setShowModal(MODAL.UPDATE_TRIP)}        
         >
           <Settings2 color={colors.zinc[400]} size={20} />
         </TouchableOpacity>
@@ -124,6 +139,41 @@ export default function Trip() {
           </Button>
         </View>
       </View>
+
+      <Modal
+        title="Atualizar viagem"
+        subtitle="Somente quem criou a viagem pode editar."
+        visible={showModal === MODAL.UPDATE_TRIP}
+        onClose={() => setShowModal(MODAL.NONE)}
+      >
+        <View className="gap-2 my-4">
+          <Input variant="secondary">
+            <MapPin color={colors.zinc[400]} size={20} />
+            <Input.Field
+              placeholder="Para onde?"
+              onChangeText={setDestination}
+              value={destination}
+            />
+          </Input>
+
+          <Input variant="secondary">
+            <IconCalendar color={colors.zinc[400]} size={20} />
+          
+            <Input.Field
+              placeholder="Quando?"
+              value={destination}
+              onPressIn={() => setShowModal(MODAL.CALENDAR)}
+              onFocus={() => Keyboard.dismiss()}
+            />
+          </Input>
+        </View>
+
+        <Button>
+          <Button.Title>Atualizar</Button.Title>
+        </Button>
+     
+      </Modal>
+
     </View>
   )
 }
