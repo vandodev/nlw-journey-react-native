@@ -1,10 +1,12 @@
 import { Button } from "@/components/button";
 import { Input } from "@/components/input";
 import { Modal } from "@/components/modal";
+import { linksServer } from "@/server/links-server";
 import { colors } from "@/styles/colors";
+import { validateInput } from "@/utils/validateInput";
 import { Plus } from "lucide-react-native";
 import { useState } from "react";
-import { View, Text } from "react-native";
+import { View, Text, Alert } from "react-native";
 
 export function Details({ tripId }: { tripId: string }) {
 
@@ -12,7 +14,45 @@ export function Details({ tripId }: { tripId: string }) {
     // MODAL
     const [showNewLinkModal, setShowNewLinkModal] = useState(false)
 
+    // DATA
+    const [linkTitle, setLinkTitle] = useState("")
+    const [linkURL, setLinkURL] = useState("")
+
+    // LOADING
+    const [isCreatingLinkTrip, setIsCreatingLinkTrip] = useState(false)
+
+    function resetNewLinkFields() {
+      setLinkTitle("")
+      setLinkURL("")
+      setShowNewLinkModal(false)
+    }
   
+    async function handleCreateTripLink() {
+      try {
+        if (!linkTitle.trim()) {
+          return Alert.alert("Link", "Informe um título para o link.")
+        }
+  
+        if (!validateInput.url(linkURL.trim())) {
+          return Alert.alert("Link", "Link inválido!")
+        }
+  
+        setIsCreatingLinkTrip(true)
+  
+        await linksServer.create({
+          tripId,
+          title: linkTitle,
+          url: linkURL,
+        })
+  
+        Alert.alert("Link", "Link criado com sucesso!")
+        resetNewLinkFields()
+      } catch (error) {
+        console.log(error)
+      } finally {
+        setIsCreatingLinkTrip(false)
+      }
+    }
  
   return (
     <View className="flex-1 mt-10">
@@ -37,15 +77,16 @@ export function Details({ tripId }: { tripId: string }) {
           <Input variant="secondary">
             <Input.Field
               placeholder="Título do link"
+              onChangeText={setLinkTitle}
             />
           </Input>
 
           <Input variant="secondary">
-            <Input.Field placeholder="URL" />
+            <Input.Field placeholder="URL" onChangeText={setLinkURL} />
           </Input>
         </View>
 
-        <Button>
+        <Button isLoading={isCreatingLinkTrip}  onPress={handleCreateTripLink}>
           <Button.Title>Salvar link</Button.Title>
         </Button>
       </Modal>
