@@ -1,4 +1,4 @@
-import { Keyboard, Text, View } from "react-native";
+import { Keyboard, Text, View, Alert } from "react-native";
 import { TripData } from "./[id]"
 import { Button } from "@/components/button"
 
@@ -15,6 +15,7 @@ import { Input } from "@/components/input";
 import dayjs from "dayjs"
 
 import { Calendar } from "@/components/calendar"
+import { activitiesServer } from "@/server/activities-server";
 
 type Props = {
     tripDetails: TripData
@@ -35,6 +36,44 @@ export function Activities({ tripDetails }: Props) {
     const [activityTitle, setActivityTitle] = useState("")
     const [activityDate, setActivityDate] = useState("")
     const [activityHour, setActivityHour] = useState("")
+
+    // LOADING
+  const [isCreatingActivity, setIsCreatingActivity] = useState(false)
+  const [isLoadingActivities, setIsLoadingActivities] = useState(true)
+
+  function resetNewActivityFields() {
+    setActivityDate("")
+    setActivityTitle("")
+    setActivityHour("")
+    setShowModal(MODAL.NONE)
+  }
+
+  async function handleCreateTripActivity() {
+    try {
+      if (!activityTitle || !activityDate || !activityHour) {
+        return Alert.alert("Cadastrar atividade", "Preencha todos os campos!")
+      }
+  
+      setIsCreatingActivity(true)
+  
+      await activitiesServer.create({
+        tripId: tripDetails.id,
+        occurs_at: dayjs(activityDate)
+          .add(Number(activityHour), "h")
+          .toString(),
+        title: activityTitle,
+      })
+  
+      Alert.alert("Nova Atividade", "Nova atividade cadastrada com sucesso!")
+      resetNewActivityFields()
+       
+    } catch (error) {
+      console.log(error)
+    } finally {
+      setIsCreatingActivity(false)
+    }
+  }
+  
   
   return (
     <View className="flex-1">
@@ -95,6 +134,13 @@ export function Activities({ tripDetails }: Props) {
                 />
               </Input>
             </View>
+
+            <Button
+              onPress={handleCreateTripActivity}
+              isLoading={isCreatingActivity}
+            >
+              <Button.Title>Salvar atividade</Button.Title>
+            </Button>
 
          </View>
 
