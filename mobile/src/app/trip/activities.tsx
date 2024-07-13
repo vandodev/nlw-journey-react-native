@@ -14,6 +14,8 @@ import { useState } from "react";
 import { Input } from "@/components/input";
 import dayjs from "dayjs"
 
+import { Calendar } from "@/components/calendar"
+
 type Props = {
     tripDetails: TripData
 }
@@ -71,6 +73,12 @@ export function Activities({ tripDetails }: Props) {
                 <Input.Field
                   placeholder="Data"
                   onChangeText={setActivityTitle}
+                  value={
+                    activityDate ? dayjs(activityDate).format("DD [de] MMMM") : ""
+                  }
+                  onFocus={() => Keyboard.dismiss()}
+                  showSoftInputOnFocus={false}
+                  onPressIn={() => setShowModal(MODAL.CALENDAR)}
                 />
               </Input>
 
@@ -90,6 +98,27 @@ export function Activities({ tripDetails }: Props) {
 
          </View>
 
+      </Modal>
+
+      <Modal
+        title="Selecionar data"
+        subtitle="Selecione a data da atividade"
+        visible={showModal === MODAL.CALENDAR}
+        onClose={() => setShowModal(MODAL.NONE)}
+      >
+        <View className="gap-4 mt-4">
+          <Calendar
+            onDayPress={(day) => setActivityDate(day.dateString)}
+            markedDates={{ [activityDate]: { selected: true } }}
+            initialDate={tripDetails.starts_at.toString()}
+            minDate={tripDetails.starts_at.toString()}
+            maxDate={tripDetails.ends_at.toString()}
+          />
+
+          <Button onPress={() => setShowModal(MODAL.NEW_ACTIVITY)}>
+            <Button.Title>Confirmar</Button.Title>
+          </Button>
+        </View>
       </Modal>
 
     </View>
