@@ -25,6 +25,9 @@ import {
 import dayjs from "dayjs"
 import { DatesSelected, calendarUtils } from "@/utils/calendarUtils"
 import { colors } from "@/styles/colors"
+import { validateInput } from "@/utils/validateInput"
+import { participantsServer } from "@/server/participants-server"
+import { tripStorage } from "@/storage/trip"
 
 
 export type TripData = TripDetails & { when: string }
@@ -41,7 +44,10 @@ export default function Trip() {
   // MODAL
   const [showModal, setShowModal] = useState(MODAL.NONE)
 
-  const tripId = useLocalSearchParams<{id: string}>().id
+  const tripParams = useLocalSearchParams<{
+    id: string
+    participant?: string
+  }>()
   
   // LOADING
   const [isLoadingTrip, setIsLoadingTrip] = useState(true)
@@ -58,20 +64,15 @@ export default function Trip() {
   const [guestEmail, setGuestEmail] = useState("")
 
 
-  const tripParams = useLocalSearchParams<{
-    id: string
-    participant?: string
-  }>()
-
   async function getTripDetails() {
     try {
       setIsLoadingTrip(true)
         
-      if(!tripId){
+      if(!tripParams.id){
         return router.back()
       } 
         
-      const trip = await tripServer.getById(tripId)
+      const trip = await tripServer.getById(tripParams.id)
       // console.log(trip)
       const maxLengthDestination = 14
 
@@ -145,6 +146,46 @@ export default function Trip() {
       setIsUpdatingTrip(false)
     }
   }
+
+  async function handleConfirmAttendance() {
+    try {
+      // if (!tripParams.id || !tripParams.participant) {
+      //   return
+      // }
+
+      if (!guestName.trim() || !guestEmail.trim()) {
+        return Alert.alert(
+          "Confirmação",
+          "Preencha nome e e-mail para confirmar a viagem!"
+        )
+      }
+
+      if (!validateInput.email(guestEmail.trim())) {
+        return Alert.alert("Confirmação", "E-mail inválido!")
+      }
+
+      setIsConfirmingAttendance(true)
+
+      await participantsServer.confirmTripByParticipantId({
+        participantId: "9306b9b2-062d-4aa8-a15c-163ed9d64a90",
+        // participantId: tripParams.participant,
+        name: guestName,
+        email: guestEmail.trim(),
+      })
+
+      Alert.alert("Confirmação", "Viagem confirmada com sucesso!")
+
+      await tripStorage.save(tripParams.id)
+
+      setShowModal(MODAL.NONE)
+    } catch (error) {
+      console.log(error)
+      Alert.alert("Confirmação", "Não foi possível confirmar!")
+    } finally {
+      setIsConfirmingAttendance(false)
+    }
+  }
+
 
   useEffect(() => {
     getTripDetails()
@@ -297,6 +338,7 @@ export default function Trip() {
 
           <Button
             isLoading={isConfirmingAttendance}
+            onPress={handleConfirmAttendance}
           >
             <Button.Title>Confirmar minha presença</Button.Title>
           </Button>
