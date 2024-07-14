@@ -64,6 +64,8 @@ export default function Trip() {
   const [guestEmail, setGuestEmail] = useState("")
 
 
+  console.log("Id do Evandro", tripParams.participant)
+
   async function getTripDetails() {
     try {
       setIsLoadingTrip(true)
@@ -71,6 +73,10 @@ export default function Trip() {
       if(!tripParams.id){
         return router.back()
       } 
+
+      if (tripParams.participant) {
+        setShowModal(MODAL.CONFIRM_ATTENDANCE)
+      }
         
       const trip = await tripServer.getById(tripParams.id)
       // console.log(trip)
@@ -149,9 +155,9 @@ export default function Trip() {
 
   async function handleConfirmAttendance() {
     try {
-      // if (!tripParams.id || !tripParams.participant) {
-      //   return
-      // }
+      if (!tripParams.id || !tripParams.participant) {
+        return
+      }
 
       if (!guestName.trim() || !guestEmail.trim()) {
         return Alert.alert(
@@ -167,8 +173,8 @@ export default function Trip() {
       setIsConfirmingAttendance(true)
 
       await participantsServer.confirmTripByParticipantId({
-        participantId: "9306b9b2-062d-4aa8-a15c-163ed9d64a90",
-        // participantId: tripParams.participant,
+        // participantId: "9306b9b2-062d-4aa8-a15c-163ed9d64a90",
+        participantId: tripParams.participant,
         name: guestName,
         email: guestEmail.trim(),
       })
@@ -301,8 +307,8 @@ export default function Trip() {
 
       <Modal
         title="Confirmar presença"
-        visible={true}
-        // visible={showModal === MODAL.CONFIRM_ATTENDANCE}
+        // visible={true}
+        visible={showModal === MODAL.CONFIRM_ATTENDANCE}
       >
         <View className="gap-4 mt-4">
           <Text className="text-zinc-400 font-regular leading-6 my-2">

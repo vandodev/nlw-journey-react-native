@@ -4,12 +4,12 @@ POST {{api_url}}/trips
 Content-type: application/json
 
 {
-  "destination": "Florianópolis, Brasil",
-  "starts_at": "2024-08-18T14:25:35.892Z",
-  "ends_at": "2024-08-24T14:25:35.892Z",
-  "emails_to_invite": ["diego.schell.f@gmail.com", "johndoe@acme.com"],
-  "owner_name": "Diego Fernandes",
-  "owner_email": "diego@rocketseat.com.br"
+  "destination": "Olimpia, Brasil",
+  "starts_at": "2024-09-18T14:25:35.892Z",
+  "ends_at": "2024-09-24T14:25:35.892Z",
+  "emails_to_invite": ["evandroapaoliveira@gmail.com", "johndoe@acme.com"],
+  "owner_name": "Evandro oliveira",
+  "owner_email": "vandoaparecido@hotmail.com"
 }
 
 ###
