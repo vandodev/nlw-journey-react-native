@@ -17,6 +17,8 @@ import {
   MapPin,
   Settings2,
   Calendar as IconCalendar,
+  User,
+  Mail,
 
 } from "lucide-react-native"
 
@@ -44,6 +46,7 @@ export default function Trip() {
   // LOADING
   const [isLoadingTrip, setIsLoadingTrip] = useState(true)
   const [isUpdatingTrip, setIsUpdatingTrip] = useState(false)
+  const [isConfirmingAttendance, setIsConfirmingAttendance] = useState(false)
 
   // DATA
   const [tripDetails, setTripDetails] = useState({} as TripData)
@@ -51,6 +54,8 @@ export default function Trip() {
   
   const [option, setOption] = useState<"activity" | "details">("activity")
   const [destination, setDestination] = useState("")
+  const [guestName, setGuestName] = useState("")
+  const [guestEmail, setGuestEmail] = useState("")
 
 
   const tripParams = useLocalSearchParams<{
@@ -249,6 +254,51 @@ export default function Trip() {
 
           <Button onPress={() => setShowModal(MODAL.UPDATE_TRIP)}>
             <Button.Title>Confirmar</Button.Title>
+          </Button>
+        </View>
+      </Modal>
+
+      <Modal
+        title="Confirmar presença"
+        visible={true}
+        // visible={showModal === MODAL.CONFIRM_ATTENDANCE}
+      >
+        <View className="gap-4 mt-4">
+          <Text className="text-zinc-400 font-regular leading-6 my-2">
+            Você foi convidado (a) para participar de uma viagem para
+            <Text className="font-semibold text-zinc-100">
+              {" "}
+              {tripDetails.destination}{" "}
+            </Text>
+            nas datas de{" "}
+            <Text className="font-semibold text-zinc-100">
+              {dayjs(tripDetails.starts_at).date()} a{" "}
+              {dayjs(tripDetails.ends_at).date()} de{" "}
+              {dayjs(tripDetails.ends_at).format("MMMM")}. {"\n\n"}
+            </Text>
+            Para confirmar sua presença na viagem, preencha os dados abaixo:
+          </Text>
+
+          <Input variant="secondary">
+            <User color={colors.zinc[400]} size={20} />
+            <Input.Field
+              placeholder="Seu nome completo"
+              onChangeText={setGuestName}
+            />
+          </Input>
+
+          <Input variant="secondary">
+            <Mail color={colors.zinc[400]} size={20} />
+            <Input.Field
+              placeholder="E-mail de confirmação"
+              onChangeText={setGuestEmail}
+            />
+          </Input>
+
+          <Button
+            isLoading={isConfirmingAttendance}
+          >
+            <Button.Title>Confirmar minha presença</Button.Title>
           </Button>
         </View>
       </Modal>
