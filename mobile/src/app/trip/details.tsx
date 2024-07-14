@@ -8,6 +8,8 @@ import { Plus } from "lucide-react-native";
 import { useEffect, useState } from "react";
 import { View, Text, Alert, FlatList } from "react-native";
 import { TripLink, TripLinkProps } from "@/components/tripLink"
+import { participantsServer } from "@/server/participants-server"
+import { Participant, ParticipantProps } from "@/components/participant"
 
 export function Details({ tripId }: { tripId: string }) {
 
@@ -24,6 +26,7 @@ export function Details({ tripId }: { tripId: string }) {
 
      // LITS
      const [links, setLinks] = useState<TripLinkProps[]>([])
+     const [participants, setParticipants] = useState<ParticipantProps[]>([])
 
     function resetNewLinkFields() {
       setLinkTitle("")
@@ -51,6 +54,7 @@ export function Details({ tripId }: { tripId: string }) {
   
         Alert.alert("Link", "Link criado com sucesso!")
         resetNewLinkFields()
+        await getTripLinks()
       } catch (error) {
         console.log(error)
       } finally {
@@ -68,8 +72,18 @@ export function Details({ tripId }: { tripId: string }) {
       }
     }
 
+    async function getTripParticipants() {
+      try {
+        const participants = await participantsServer.getByTripId(tripId)
+        setParticipants(participants)
+      } catch (error) {
+        console.log(error)
+      }
+    }
+
     useEffect(() => {
       getTripLinks()
+      getTripParticipants()
     }, [])
   
  
@@ -98,6 +112,20 @@ export function Details({ tripId }: { tripId: string }) {
             <Plus color={colors.zinc[200]} size={20} />
             <Button.Title>Cadastrar novo link</Button.Title>
         </Button>
+      </View>
+
+      <View className="flex-1 border-t border-zinc-800 mt-6">
+        <Text className="text-zinc-50 text-2xl font-semibold my-6">
+          Convidados
+        </Text>
+
+        <FlatList
+          data={participants}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => <Participant data={item} />}
+          contentContainerClassName="gap-4 pb-44"
+        />
+
       </View>
 
       <Modal
